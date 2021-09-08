@@ -4,35 +4,30 @@ const pdfreader = require("pdfreader");
 
 let rows = {};
 
+let fileName = "Resume-Jeffery-Salisbury.pdf";
+
 function printRows() {
   Object.keys(rows)
     .sort((y1, y2) => parseFloat(y1) - parseFloat(y2))
-    .forEach((y) => console.log((rows[y] || []).join("")));
+    .forEach((y) => console.log("Row: ", (rows[y] || []).join("")));
 }
 
 function testParser() {
-  new pdfreader.PdfReader().parseFileItems(
-    "Jeff-Salisbury-Resume-2021.pdf",
-    function (err, item) {
-      if (!item || item.page) {
-        // end of file, or page
-        printRows();
-        // console.log("Page: " + item.page);
-        rows = {}; //clear rows for next page
-      } else if (item.text) {
-        // accumulate text items into rows object, per line
-        (rows[item.y] = rows[item.y] || []).push(item.text);
-      }
+  new pdfreader.PdfReader().parseFileItems(fileName, function (err, item) {
+    if (!item || item.page) {
+      // end of file, or page
+      printRows();
+      // console.log("Page: " + item.page);
+      rows = {}; //clear rows for next page
+    } else if (item.text) {
+      // accumulate text items into rows object, per line
+      (rows[item.y] = rows[item.y] || []).push(item.text);
     }
-  );
+  });
 }
 
 var server = http.createServer(function (req, res) {
-  //create web server
   if (req.url == "/") {
-    //check the URL of the current request
-    console.log("Test");
-    // set response header
     res.writeHead(200, { "Content-Type": "text/html" });
     testParser();
     // set response content
